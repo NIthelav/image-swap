@@ -1,54 +1,56 @@
-import React, { FC, useCallback, DragEvent, useState } from "react";
-import { Image } from "./Image/Image";
+import React, { FC, useMemo, useCallback, DragEvent, useState } from "react";
 import { cn } from "../../util/cn";
+import { swapIdx } from "../../util/swapIdx";
 import "./Gallery.css";
 
 const cls = cn("gallery");
-
-interface GalleryProps {
+interface GalleyProps {
   srcList: string[];
-  setIsActive?: (isActive: boolean) => void;
+  setSrcList: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export const Gallery: FC<GalleryProps> = ({ srcList, setIsActive }) => {
+export const Gallery: FC<GalleyProps> = ({ srcList, setSrcList }) => {
+  const [draggedIdx, setDraggetIdx] = useState(null as number | null);
+
+  const swap = useCallback(
+    (idx: number, idx1: number) =>
+      setSrcList((srcList) => swapIdx<string>(idx, idx1, srcList)),
+    [setSrcList]
+  );
+
   const onDragStartHandler = useCallback(
-    (e: DragEvent) => {
-      e.preventDefault();
-      setIsActive?.(false);
+    (idx: number) => (e: DragEvent) => {
+      setDraggetIdx(idx);
+      e.dataTransfer.effectAllowed = "move";
     },
-    [setIsActive]
+    []
   );
 
-  const onDragHandler = useCallback((e: DragEvent) => {
-    e.preventDefault();
-  }, []);
-
-  const onDragEndHandler = useCallback(
-    (e: DragEvent) => {
-      e.preventDefault();
-      setIsActive?.(true);
+  const onDragEnterHandler = useCallback(
+    (idx: number) => (e: DragEvent) => {
+      const target = e.target as HTMLImageElement;
+      if (!target.classList.contains(cls("image"))) return;
+      if (draggedIdx !== null) {
+        swap(idx, draggedIdx);
+        setDraggetIdx(idx);
+      }
     },
-    [setIsActive]
+    [swap, draggedIdx]
   );
 
-  const onDropHandler = useCallback((e: DragEvent) => {
-    console.log("DropImage");
-    setIsActive?.(true);
-    e.preventDefault();
-  }, []);
-
-  return (
-    <div className={cls()} onDrop={onDropHandler}>
-      {srcList.map((src) => (
-        <Image
+  const images = useMemo(
+    () =>
+      srcList.map((src, idx) => (
+        <img
           src={src}
-          alt="Ты проебался, дружище"
+          alt="Ты пидор"
           className={cls("image")}
-          onStart={onDragStartHandler}
-          onDrag={onDragHandler}
-          onEnd={onDragEndHandler}
+          draggable={true}
+          onDragStart={onDragStartHandler(idx)}
+          onDragEnter={onDragEnterHandler(idx)}
         />
-      ))}
-    </div>
+      )),
+    [srcList, onDragEnterHandler]
   );
+  return <div className={cls()}>{images}</div>;
 };

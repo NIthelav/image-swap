@@ -18,11 +18,8 @@ function App() {
 
   return (
     <>
-      <Gallery
-        srcList={srcList}
-        setIsActive={(isActive: boolean) => setIsActive(isActive)}
-      />
       <DownloadZone getDropedFile={addSrc} active={isActive} />
+      <Gallery srcList={srcList} setSrcList={setSrcList}></Gallery>
     </>
   );
 }

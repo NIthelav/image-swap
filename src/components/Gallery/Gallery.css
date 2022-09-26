@@ -1,10 +1,11 @@
 .gallery {
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   flex-wrap: wrap;
 }
 
 .gallery__image {
   width: 200px;
   height: 200px;
+  object-fit: contain;
 }
